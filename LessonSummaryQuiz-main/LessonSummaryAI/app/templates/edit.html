@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Edit Content - LessonAI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=50">
+    <style>
+        /* GENEL SAYFA */
+        body { background-color: #fdf2f8; }
+
+        /* HEADER */
+        .editor-header {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 30px;
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px;
+        }
+
+        /* EDIT KARTLARI */
+        .edit-card {
+            background: white;
+            border-radius: 25px;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 10px 30px rgba(155, 89, 182, 0.08);
+            overflow: hidden;
+            height: 100%;
+        }
+        .edit-card-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fdfbfd;
+            font-weight: bold; color: #9b59b6;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        /* INPUT ALANLARI */
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #f3e5f5;
+            padding: 12px 15px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #9b59b6;
+            box-shadow: 0 0 0 4px rgba(155, 89, 182, 0.1);
+        }
+        textarea.form-control {
+            resize: none;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+
+        /* QUIZ DÜZENLEME ALANLARI */
+        .quiz-item {
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .quiz-badge {
+            position: absolute; top: -10px; left: 20px;
+            background: #9b59b6; color: white;
+            padding: 4px 12px; border-radius: 10px;
+            font-size: 0.75rem; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(155, 89, 182, 0.3);
+        }
+
+        /* DOĞRU CEVAP INPUT */
+        .input-correct {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+        .input-correct:focus { border-color: #2ecc71; box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1); }
+        .label-correct { color: #166534; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; display: block; }
+
+        /* YANLIŞ CEVAP INPUT */
+        .input-wrong {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+        .input-wrong:focus { border-color: #e74c3c; box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1); }
+
+        /* BUTTONS */
+        .btn-gradient-save {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            border: none; color: white; font-weight: bold; padding: 12px 30px; border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+            transition: 0.3s;
+        }
+        .btn-gradient-save:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4); }
+
+        .btn-soft-back {
+            background: #f1f2f6; color: #7f8c8d; font-weight: 600; border-radius: 50px; padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center;
+        }
+        .btn-soft-back:hover { background: #e2e6ea; color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand-box">
+            <div class="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border: 2px solid #ff9ff3;">
+                <i class="fa-solid fa-gem" style="background: -webkit-linear-gradient(#9b59b6, #ff9ff3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+            </div>
+            <h4 class="fw-bold m-0" style="color: #9b59b6;">LessonAI</h4>
+        </div>
+
+        <ul class="nav-links">
+            <li class="nav-item"><a href="/" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles"></i> Generator</a></li>
+            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="/history" class="nav-link active"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+            <li class="nav-item"><a href="/profile" class="nav-link"><i class="fa-solid fa-user-gear"></i> Profile</a></li>
+        </ul>
+
+        <div class="mt-auto">
+            <a href="/logout" class="nav-link text-danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="editor-header animate-fade-in">
+            <div>
+                <h4 class="fw-bold m-0" style="color: #2c3e50;">Editor Studio ✏️</h4>
+                <small class="text-muted">Customize your summary and quiz questions.</small>
+            </div>
+            <a href="/history" class="btn-soft-back">
+                <i class="fa-solid fa-arrow-left me-2"></i>Back to History
+            </a>
+        </div>
+
+        <form method="POST" class="animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="row g-4">
+                
+                <div class="col-lg-6">
+                    <div class="edit-card h-100">
+                        <div class="edit-card-header">
+                            <i class="fa-solid fa-align-left"></i> Edit Summary Text
+                        </div>
+                        <div class="p-4 h-100">
+                            <textarea class="form-control h-100" name="summary_text" style="min-height: 500px;" placeholder="Summary content goes here...">{{ content.summary_text }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="edit-card">
+                        <div class="edit-card-header">
+                            <i class="fa-solid fa-list-check"></i> Edit Quiz Questions
+                        </div>
+                        <div class="p-4" style="max-height: 600px; overflow-y: auto;">
+                            
+                            {% for q in quiz_questions %}
+                            {% set q_index = loop.index0 %}
+                            
+                            <div class="quiz-item">
+                                <span class="quiz-badge">Question {{ loop.index }}</span>
+                                
+                                <div class="mb-3 mt-2">
+                                    <label class="small text-muted fw-bold mb-1">Question Text</label>
+                                    <input type="text" class="form-control fw-bold text-dark" name="question_{{ q_index }}" value="{{ q.question }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="label-correct"><i class="fa-solid fa-check-circle me-1"></i> Correct Answer</label>
+                                    <input type="text" class="form-control input-correct fw-bold" name="answer_{{ q_index }}" value="{{ q.answer }}">
+                                </div>
+
+                                <div>
+                                    <label class="small text-danger fw-bold mb-1"><i class="fa-solid fa-xmark-circle me-1"></i> Distractors (Wrong Options)</label>
+                                    {% set option_counter = 0 %}
+                                    {% for opt in q.options %}
+                                        {% if opt != q.answer %}
+                                            <div class="mb-2">
+                                                <input type="text" class="form-control input-wrong" name="option_{{ q_index }}_{{ option_counter }}" value="{{ opt }}">
+                                            </div>
+                                            {% set option_counter = option_counter + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="fixed-bottom p-3 bg-white border-top shadow-lg" style="margin-left: 260px; z-index: 1000;">
+                <div class="container-fluid d-flex justify-content-end align-items-center gap-3">
+                    <span class="text-muted small"><i class="fa-solid fa-circle-info me-1"></i> Changes will be reflected in PDF/Word downloads.</span>
+                    <a href="/history" class="btn btn-light rounded-pill px-4 fw-bold border">Cancel</a>
+                    <button type="submit" class="btn btn-gradient-save">
+                        <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div style="height: 100px;"></div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

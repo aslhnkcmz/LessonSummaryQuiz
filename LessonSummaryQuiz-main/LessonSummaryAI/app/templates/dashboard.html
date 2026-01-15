@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard - LessonAI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=52">
+    <style>
+        /* GENEL AYARLAR */
+        body { background-color: #fdf2f8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        /* SIDEBAR (Standart) */
+        .sidebar {
+            width: 260px; height: 100vh; position: fixed; left: 0; top: 0;
+            background: white; padding: 30px 20px;
+            display: flex; flex-direction: column;
+            border-right: 1px solid #f0f0f0; z-index: 1000;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.02);
+        }
+        .brand-box { display: flex; align-items: center; gap: 15px; margin-bottom: 50px; padding-left: 10px; }
+        .nav-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+        .nav-link {
+            text-decoration: none; color: #7f8c8d; font-weight: 600; padding: 12px 20px;
+            border-radius: 15px; display: flex; align-items: center; gap: 12px; transition: all 0.3s;
+        }
+        .nav-link:hover, .nav-link.active { background: #fdf2f8; color: #9b59b6; }
+        .nav-link.active i { color: #9b59b6; }
+        .nav-link.text-danger:hover { background: #fee2e2; color: #c0392b; }
+
+        /* ANA İÇERİK */
+        .main-content { margin-left: 260px; padding: 40px; }
+
+        /* KARTLAR */
+        .stat-card {
+            background: white; border-radius: 25px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(155, 89, 182, 0.05);
+            transition: transform 0.3s; border: 1px solid rgba(255,255,255,0.8);
+            height: 100%; display: flex; align-items: center; justify-content: space-between;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(155, 89, 182, 0.15); }
+        
+        .icon-box-lg {
+            width: 70px; height: 70px; border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; background: linear-gradient(135deg, #fdfbfd 0%, #f3e5f5 100%); color: #9b59b6;
+        }
+
+        /* DAİRESEL GRAFİK (CSS Only) */
+        .progress-circle {
+            position: relative; width: 150px; height: 150px; border-radius: 50%;
+            background: conic-gradient(#9b59b6 calc(var(--percent) * 1%), #f3e5f5 0);
+            display: flex; align-items: center; justify-content: center; margin: 0 auto;
+        }
+        .progress-circle::before { content: ""; position: absolute; width: 120px; height: 120px; background: white; border-radius: 50%; }
+        .progress-value { position: relative; font-size: 2rem; font-weight: bold; color: #2c3e50; }
+        
+        /* HOŞGELDİN KARTI */
+        .welcome-card {
+            background: linear-gradient(135deg, #c471ed 0%, #f64f59 100%);
+            border-radius: 25px; padding: 40px; color: white;
+            position: relative; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(246, 79, 89, 0.3);
+        }
+        .welcome-blob { position: absolute; background: rgba(255,255,255,0.1); border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand-box">
+            <div class="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border: 2px solid #ff9ff3;">
+                <i class="fa-solid fa-gem" style="background: -webkit-linear-gradient(#9b59b6, #ff9ff3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+            </div>
+            <h4 class="fw-bold m-0" style="color: #9b59b6;">LessonAI</h4>
+        </div>
+
+        <ul class="nav-links">
+            <li class="nav-item"><a href="/" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles"></i> Generator</a></li>
+            <li class="nav-item"><a href="/dashboard" class="nav-link active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="/history" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+            <li class="nav-item"><a href="/profile" class="nav-link"><i class="fa-solid fa-user-gear"></i> Profile</a></li>
+        </ul>
+
+        <div class="mt-auto">
+            <a href="/logout" class="nav-link text-danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="welcome-card mb-5 animate-fade-in">
+            <div class="welcome-blob" style="width: 200px; height: 200px; top: -50px; right: -50px;"></div>
+            <div class="welcome-blob" style="width: 100px; height: 100px; bottom: -20px; left: 20px;"></div>
+            
+            <div class="d-flex justify-content-between align-items-center position-relative">
+                <div>
+                    <h1 class="fw-bold mb-2">Welcome back, {{ user.email.split('@')[0] }}! 👋</h1>
+                    <p class="fs-5 opacity-90 mb-4">You're doing great. Check out your learning progress.</p>
+                    <a href="/" class="btn btn-light rounded-pill px-4 fw-bold text-primary shadow-sm">
+                        <i class="fa-solid fa-plus me-2"></i>Create New
+                    </a>
+                </div>
+                <div class="d-none d-md-block fs-1 opacity-50">
+                    <i class="fa-solid fa-chart-simple fa-3x"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="stat-card animate-fade-in" style="animation-delay: 0.1s; display: block; text-align: center;">
+                    <h5 class="fw-bold text-muted mb-4">Average Quiz Score</h5>
+                    <div class="progress-circle" style="--percent: {{ stats.avg }};">
+                        <div class="progress-value">{{ stats.avg }}%</div>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0">Based on your quiz results</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="stat-card animate-fade-in" style="animation-delay: 0.2s;">
+                    <div>
+                        <h2 class="fw-bold m-0" style="font-size: 3rem; color: #2c3e50;">{{ stats.summaries }}</h2>
+                        <h6 class="text-muted fw-bold text-uppercase mt-2">Total Summaries</h6>
+                        <small class="text-muted">Generated contents</small>
+                    </div>
+                    <div class="icon-box-lg">
+                        <i class="fa-solid fa-file-lines"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12">
+                <div class="stat-card animate-fade-in" style="animation-delay: 0.3s;">
+                    <div>
+                        <h2 class="fw-bold m-0" style="font-size: 3rem; color: #2c3e50;">{{ stats.quizzes }}</h2>
+                        <h6 class="text-muted fw-bold text-uppercase mt-2">Quizzes Taken</h6>
+                        <small class="text-muted">Completed tests</small>
+                    </div>
+                    <div class="icon-box-lg" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); color: #2196f3;">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

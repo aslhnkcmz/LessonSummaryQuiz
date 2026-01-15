@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin Dashboard - LessonAI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=55">
+    <style>
+        /* GENEL AYARLAR */
+        body { background-color: #fdf2f8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* SIDEBAR TASARIMI */
+        .sidebar {
+            width: 260px; height: 100vh; position: fixed; left: 0; top: 0;
+            background: white; padding: 30px 20px;
+            display: flex; flex-direction: column;
+            border-right: 1px solid #f0f0f0; z-index: 1000;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.02);
+        }
+        .brand-box { display: flex; align-items: center; gap: 15px; margin-bottom: 50px; padding-left: 10px; }
+        .nav-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+        .nav-link {
+            text-decoration: none; color: #7f8c8d; font-weight: 600; padding: 12px 20px;
+            border-radius: 15px; display: flex; align-items: center; gap: 12px; transition: all 0.3s;
+        }
+        .nav-link:hover, .nav-link.active { background: #fdf2f8; color: #9b59b6; }
+        .nav-link.active i { color: #9b59b6; }
+        .nav-link.text-danger:hover { background: #fee2e2; color: #c0392b; }
+
+        /* ANA İÇERİK ALANI */
+        .main-content { margin-left: 260px; padding: 40px; }
+
+        /* ADMIN KARTLARI */
+        .metric-card {
+            background: white; border-radius: 20px; padding: 25px;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 10px 30px rgba(155, 89, 182, 0.05);
+            display: flex; align-items: center; justify-content: space-between;
+            transition: transform 0.3s;
+        }
+        .metric-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(155, 89, 182, 0.15); }
+        .icon-circle { width: 55px; height: 55px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+
+        /* PANELLER */
+        .panel-box {
+            background: white; border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(155, 89, 182, 0.05);
+            overflow: hidden; margin-bottom: 30px; border: 1px solid #f8f9fa; height: 100%;
+        }
+        .panel-header {
+            padding: 20px 30px; background: white;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: bold; display: flex; justify-content: space-between; align-items: center;
+            font-size: 1.1rem;
+        }
+
+        /* TABLO & LİSTELER */
+        .table thead th { border: none; background: #fdfbfd; color: #9b59b6; font-size: 0.8rem; text-transform: uppercase; padding: 15px 25px; }
+        .table tbody td { border-bottom: 1px solid #f8f9fa; padding: 15px 25px; vertical-align: middle; color: #555; }
+        .config-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f8f9fa; }
+        .config-item:last-child { border-bottom: none; }
+
+        /* BUTONLAR */
+        .btn-pink-outline { color: #ff9ff3; border: 2px solid #ff9ff3; font-weight: 600; border-radius: 50px; transition: 0.3s; }
+        .btn-pink-outline:hover { background: #ff9ff3; color: white; box-shadow: 0 5px 15px rgba(255, 159, 243, 0.4); }
+        
+        .btn-save-soft { background: #e8f5e9; color: #2ecc71; border: none; font-weight: 600; border-radius: 50px; transition: 0.3s; }
+        .btn-save-soft:hover { background: #2ecc71; color: white; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3); }
+
+        .form-check-input:checked { background-color: #9b59b6; border-color: #9b59b6; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand-box">
+            <div class="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border: 2px solid #ff9ff3;">
+                <i class="fa-solid fa-gem" style="background: -webkit-linear-gradient(#9b59b6, #ff9ff3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+            </div>
+            <h4 class="fw-bold m-0" style="color: #9b59b6;">LessonAI</h4>
+        </div>
+
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a href="/admin" class="nav-link active">
+                    <i class="fa-solid fa-gauge-high"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+                    <i class="fa-solid fa-user-plus"></i> New Admin
+                </a>
+            </li>
+            </ul>
+
+        <div class="mt-auto">
+            <a href="/" class="nav-link mb-2"><i class="fa-solid fa-arrow-up-right-from-square"></i> View Site</a>
+            <a href="/logout" class="nav-link text-danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="fw-bold m-0" style="color: #2c3e50;">Admin Console 🛡️</h2>
+                <p class="text-muted m-0">Manage users, content, and system settings.</p>
+            </div>
+            
+            <div style="min-width: 300px;">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }} border-0 rounded-pill shadow-sm py-2 px-4 m-0 d-flex align-items-center animate-fade-in">
+                        <i class="fa-solid fa-circle-info me-2"></i> {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div><h2 class="fw-bold m-0 text-dark">{{ metrics.users }}</h2><small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Total Users</small></div>
+                    <div class="icon-circle" style="background: #e3f2fd; color: #2196f3;"><i class="fa-solid fa-users"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div><h2 class="fw-bold m-0 text-dark">{{ metrics.contents }}</h2><small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Contents</small></div>
+                    <div class="icon-circle" style="background: #f3e5f5; color: #9c27b0;"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div><h2 class="fw-bold m-0 text-dark">{{ "%.1f"|format(metrics.avg_rating) }}</h2><small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Satisfaction</small></div>
+                    <div class="icon-circle" style="background: #fff3e0; color: #ff9800;"><i class="fa-solid fa-star"></i></div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div>
+                        <h5 class="fw-bold {{ 'text-danger' if config.maintenance else 'text-success' }} m-0">
+                            {{ 'Maintenance' if config.maintenance else 'Online' }}
+                        </h5>
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">System Status</small>
+                    </div>
+                    <div class="icon-circle" style="background: {{ '#ffebee' if config.maintenance else '#e8f5e9' }}; color: {{ '#f44336' if config.maintenance else '#4caf50' }};">
+                        <i class="fa-solid {{ 'fa-triangle-exclamation' if config.maintenance else 'fa-server' }}"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-lg-8">
+                <div class="panel-box">
+                    <div class="panel-header text-primary">
+                        <span><i class="fa-solid fa-users-gear me-2"></i>User Management</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table mb-0 table-hover">
+                            <thead><tr><th>ID</th><th>User</th><th>Role</th><th class="text-end">Actions</th></tr></thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td class="fw-bold text-muted ps-4">#{{ user.id }}</td>
+                                    <td><div class="d-flex align-items-center"><div class="bg-light text-secondary rounded-circle p-2 me-2"><i class="fa-regular fa-user"></i></div>{{ user.email }}</div></td>
+                                    <td>
+                                        {% if user.role == 'Admin' %}<span class="badge bg-dark rounded-pill px-3">Admin</span>
+                                        {% else %}<span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3">Student</span>{% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a href="{{ url_for('admin_user_detail', user_id=user.id) }}" class="btn btn-sm btn-light text-primary me-1" title="View Activity">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <form action="/admin/reset-password/{{ user.id }}" method="POST" class="d-inline" onsubmit="return confirm('Reset password?');"><button class="btn btn-sm btn-light text-warning" title="Reset Password"><i class="fa-solid fa-key"></i></button></form>
+                                        {% if user.id != current_user.id %}
+                                        <form action="/admin/delete-user/{{ user.id }}" method="POST" class="d-inline" onsubmit="return confirm('Delete user?');"><button class="btn btn-sm btn-light text-danger" title="Delete User"><i class="fa-solid fa-trash"></i></button></form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="panel-box">
+                    <div class="panel-header" style="color: #ff9ff3;">
+                        <span><i class="fa-solid fa-sliders me-2"></i>Configuration</span>
+                    </div>
+                    <div class="p-4">
+                        <form action="/admin/config" method="POST">
+                            <div class="mb-3">
+                                <label class="small fw-bold text-muted mb-1">AI Model Engine</label>
+                                <select class="form-select border-0 bg-light rounded-pill px-3" name="ai_model">
+                                    <option value="gemini" {% if config.ai_model == 'gemini' %}selected{% endif %}>Google Gemini Pro</option>
+                                    <option value="gpt4" {% if config.ai_model == 'gpt4' %}selected{% endif %}>GPT-4 (Premium)</option>
+                                </select>
+                            </div>
+
+                            <div class="config-item">
+                                <div><h6 class="m-0 text-dark fs-6">Maintenance Mode</h6><small class="text-muted" style="font-size: 0.7rem;">Users cannot login</small></div>
+                                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="maintenance_mode" role="switch" {% if config.maintenance %}checked{% endif %}></div>
+                            </div>
+
+                            <div class="config-item">
+                                <div><h6 class="m-0 text-dark fs-6">Database</h6><small class="text-success"><i class="fa-solid fa-circle me-1" style="font-size: 6px;"></i>Connected</small></div>
+                                <button type="button" onclick="window.location.reload()" class="btn btn-sm btn-light border rounded-circle" style="width:30px; height:30px;"><i class="fa-solid fa-rotate"></i></button>
+                            </div>
+
+                            <div class="mt-4 d-flex flex-column gap-2">
+                                <button type="submit" name="action" value="save_settings" class="btn btn-save-soft w-100 btn-sm py-2">
+                                    <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
+                                </button>
+                                <button type="submit" name="action" value="clear_cache" class="btn btn-pink-outline w-100 btn-sm py-2">
+                                    <i class="fa-solid fa-broom me-2"></i>Clear Cache
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-6">
+                <div class="panel-box">
+                    <div class="panel-header text-warning"><span><i class="fa-solid fa-star me-2"></i>Recent Feedback</span></div>
+                    <div class="p-3" style="max-height: 250px; overflow-y: auto;">
+                        {% for fb in feedbacks %}
+                        <div class="d-flex justify-content-between p-3 mb-2 bg-light rounded-4">
+                            <div>
+                                <div style="color: #f1c40f; font-size: 0.8rem;">{% for i in range(fb.rating) %}<i class="fa-solid fa-star"></i>{% endfor %}</div>
+                                <small class="text-muted d-block mt-1">"{{ fb.comment }}"</small>
+                            </div>
+                            <small class="text-muted opacity-50" style="font-size: 0.7rem;">{{ fb.created_at.strftime('%d/%m') }}</small>
+                        </div>
+                        {% else %}<p class="text-center text-muted py-4">No feedback yet.</p>{% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="panel-box">
+                    <div class="panel-header text-info"><span><i class="fa-solid fa-list-ul me-2"></i>System Logs</span></div>
+                    <div class="table-responsive">
+                        <table class="table mb-0 table-sm">
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td class="ps-4 text-muted" style="font-size: 0.8rem;">{{ log.timestamp.strftime('%H:%M') }}</td>
+                                    <td class="fw-bold text-dark" style="font-size: 0.85rem;">{{ log.action }}</td>
+                                    <td class="text-muted text-truncate" style="max-width: 150px; font-size: 0.85rem;">{{ log.details }}</td>
+                                </tr>
+                                {% else %}<tr><td colspan="3" class="text-center py-4 text-muted">No logs found.</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="addAdminModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Create Admin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form action="/admin/create-admin" method="POST">
+                        <div class="mb-3">
+                            <label class="small text-muted fw-bold">Email</label>
+                            <input type="email" name="email" class="form-control rounded-pill bg-light border-0 px-3" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="small text-muted fw-bold">Password</label>
+                            <input type="password" name="password" class="form-control rounded-pill bg-light border-0 px-3" required>
+                        </div>
+                        <button class="btn btn-dark w-100 rounded-pill fw-bold">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

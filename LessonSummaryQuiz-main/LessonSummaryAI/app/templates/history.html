@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>History - LessonAI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=48">
+    <style>
+        /* ÖZEL TABLO STİLLERİ */
+        .history-table {
+            border-collapse: separate;
+            border-spacing: 0 15px;
+        }
+        .history-row {
+            background: white;
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .history-row:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(155, 89, 182, 0.15);
+        }
+        .history-row td {
+            border: none;
+            padding: 20px 25px;
+            vertical-align: middle;
+        }
+        .history-row td:first-child { border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
+        .history-row td:last-child { border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
+
+        .icon-box {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, #e1bee7 0%, #f3e5f5 100%);
+            color: #9b59b6;
+            border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* BUTONLAR */
+        .btn-icon {
+            width: 35px; height: 35px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+        .btn-icon:hover { transform: scale(1.1); }
+        
+        .btn-pdf { color: #e74c3c; background: #fcebe9; }
+        .btn-pdf:hover { background: #e74c3c; color: white; }
+        
+        .btn-word { color: #2980b9; background: #eaf4fa; }
+        .btn-word:hover { background: #2980b9; color: white; }
+
+        .btn-edit { color: #f39c12; background: #fef5e7; }
+        .btn-edit:hover { background: #f39c12; color: white; }
+        
+        /* YENİ: RATE BUTONU */
+        .btn-rate { color: #f1c40f; background: #fffbe6; }
+        .btn-rate:hover { background: #f1c40f; color: white; }
+
+        .btn-view { color: #27ae60; background: #eafaf1; font-weight: 600; width: auto; padding: 0 15px; border-radius: 20px; height: 35px; }
+        .btn-view:hover { background: #27ae60; color: white; }
+
+        .btn-delete { color: #95a5a6; }
+        .btn-delete:hover { color: #c0392b; background: #f9e7e7; }
+
+        .btn-quiz-mini {
+            background: linear-gradient(135deg, #c471ed 0%, #f64f59 100%);
+            color: white; border: none;
+            padding: 5px 15px; border-radius: 20px;
+            font-weight: 600; font-size: 0.9rem;
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(196, 113, 237, 0.3);
+        }
+        .btn-quiz-mini:hover { color: white; box-shadow: 0 6px 15px rgba(196, 113, 237, 0.5); transform: translateY(-1px); }
+
+        /* YILDIZ SEÇİMİ */
+        .rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            gap: 10px;
+        }
+        .rating input { display: none; }
+        .rating label {
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ddd'%3e%3cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            transition: .3s;
+        }
+        .rating input:checked ~ label,
+        .rating input:checked ~ label ~ label,
+        .rating label:hover,
+        .rating label:hover ~ label {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f1c40f'%3e%3cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3e%3c/svg%3e");
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand-box">
+            <div class="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border: 2px solid #ff9ff3;">
+                <i class="fa-solid fa-gem" style="background: -webkit-linear-gradient(#9b59b6, #ff9ff3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+            </div>
+            <h4 class="fw-bold m-0" style="color: #9b59b6;">LessonAI</h4>
+        </div>
+
+        <ul class="nav-links">
+            <li class="nav-item"><a href="/" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles"></i> Generator</a></li>
+            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="/history" class="nav-link active"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+            <li class="nav-item"><a href="/profile" class="nav-link"><i class="fa-solid fa-user-gear"></i> Profile</a></li>
+        </ul>
+
+        <div class="mt-auto">
+            <a href="/logout" class="nav-link text-danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} border-0 rounded-4 shadow-sm mb-4 animate-fade-in">
+                <i class="fa-solid fa-info-circle me-2"></i> {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="fw-bold m-0" style="color: #2c3e50;">Generation History</h2>
+                <p class="text-muted m-0">All your summaries and quizzes in one place.</p>
+            </div>
+            <a href="/" class="btn btn-gradient px-4" style="width: auto;">
+                <i class="fa-solid fa-plus me-2"></i>New
+            </a>
+        </div>
+
+        <div class="animate-fade-in">
+            <table class="w-100 history-table">
+                <tbody>
+                    {% for item in history %}
+                    <tr class="history-row">
+                        <td style="width: 80px;">
+                            <div class="icon-box">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </div>
+                        </td>
+                        
+                        <td style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#viewModal{{ item.id }}">
+                            <h6 class="fw-bold text-dark m-0 text-truncate" style="max-width: 400px;">
+                                {{ item.original_text[:50] }}...
+                            </h6>
+                            <div class="d-flex gap-3 mt-1">
+                                <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i> {{ item.created_at.strftime('%d %b, %H:%M') }}</small>
+                                <small class="text-muted"><i class="fa-solid fa-ruler-horizontal me-1"></i> {{ item.length_pref }}</small>
+                            </div>
+                        </td>
+
+                        <td class="text-end">
+                            <div class="d-flex align-items-center justify-content-end gap-2">
+                                
+                                <button class="btn btn-icon btn-view" data-bs-toggle="modal" data-bs-target="#viewModal{{ item.id }}" title="Read & Listen">
+                                    <i class="fa-solid fa-eye me-2"></i>View
+                                </button>
+
+                                <a href="/take-quiz/{{ item.id }}" class="btn-quiz-mini">
+                                    Take Quiz
+                                </a>
+
+                                <div class="vr mx-1 opacity-25"></div>
+                                
+                                <button class="btn btn-icon btn-rate" data-bs-toggle="modal" data-bs-target="#rateModal{{ item.id }}" title="Rate Content">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+
+                                <a href="/download/{{ item.id }}" class="btn btn-icon btn-pdf" title="Download PDF">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                </a>
+                                
+                                <a href="/download-word/{{ item.id }}" class="btn btn-icon btn-word" title="Download Word">
+                                    <i class="fa-solid fa-file-word"></i>
+                                </a>
+
+                                <a href="/edit/{{ item.id }}" class="btn btn-icon btn-edit" title="Edit Content">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+
+                                <form action="/delete-content/{{ item.id }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
+                                    <button type="submit" class="btn btn-icon btn-delete" title="Delete">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <div class="modal fade" id="viewModal{{ item.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content rounded-4 border-0 shadow">
+                                <div class="modal-header border-0 pb-0">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2"><i class="fa-solid fa-book-open"></i></div>
+                                        <h5 class="modal-title fw-bold">Summary Details</h5>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body p-4">
+                                    <div class="p-3 rounded-4 mb-4 d-flex align-items-center bg-light border">
+                                        <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 me-3">
+                                            <i class="fa-solid fa-headphones-simple fs-4"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <small class="text-muted fw-bold text-uppercase d-block mb-1">Listen to Summary</small>
+                                            <audio controls class="w-100" style="height: 30px;" id="audioPlayer{{ item.id }}">
+                                                <source src="/listen/{{ item.id }}" type="audio/mpeg">
+                                            </audio>
+                                        </div>
+                                    </div>
+                                    <h6 class="fw-bold text-muted mb-2">Full Summary Text:</h6>
+                                    <div class="p-3 bg-white border rounded-3 text-secondary" style="max-height: 300px; overflow-y: auto; line-height: 1.7;">
+                                        {{ item.summary_text }}
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0 pt-0">
+                                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                                    <a href="/take-quiz/{{ item.id }}" class="btn btn-gradient rounded-pill px-4">Take Quiz</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="rateModal{{ item.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content rounded-4 border-0 shadow">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="modal-title fw-bold text-warning"><i class="fa-solid fa-star me-2"></i>Rate Content</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="/feedback/{{ item.id }}" method="POST">
+                                    <div class="modal-body p-4 text-center">
+                                        <p class="text-muted mb-3">How helpful was this summary?</p>
+                                        
+                                        <div class="rating mb-4">
+                                            <input type="radio" name="rating" value="5" id="5-{{ item.id }}" required><label for="5-{{ item.id }}"></label>
+                                            <input type="radio" name="rating" value="4" id="4-{{ item.id }}"><label for="4-{{ item.id }}"></label>
+                                            <input type="radio" name="rating" value="3" id="3-{{ item.id }}"><label for="3-{{ item.id }}"></label>
+                                            <input type="radio" name="rating" value="2" id="2-{{ item.id }}"><label for="2-{{ item.id }}"></label>
+                                            <input type="radio" name="rating" value="1" id="1-{{ item.id }}"><label for="1-{{ item.id }}"></label>
+                                        </div>
+
+                                        <textarea name="comment" class="form-control bg-light border-0" rows="3" placeholder="Any comments? (Optional)"></textarea>
+                                    </div>
+                                    <div class="modal-footer border-0">
+                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-warning text-white rounded-pill px-4 fw-bold">Submit Feedback</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center py-5">
+                            <h5 class="fw-bold text-muted">No history found</h5>
+                            <a href="/" class="btn btn-sm btn-gradient px-4">Go to Generator</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var modals = document.querySelectorAll('.modal');
+            modals.forEach(function(modal) {
+                modal.addEventListener('hide.bs.modal', function() {
+                    var audios = modal.querySelectorAll('audio');
+                    audios.forEach(function(audio) { audio.pause(); });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
